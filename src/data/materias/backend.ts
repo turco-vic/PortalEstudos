@@ -19,14 +19,14 @@ Responsabilidades principais:
 - Persistência: salvar, buscar, alterar e apagar dados no banco
 - Validação dos dados que chegam
 - Segurança: autenticação e autorização
-- Expor uma **API** pro front-end (e outros clientes) consumir
+- Expor uma **API** para o front-end (e outros clientes) consumir
 `,
     },
     {
       id: 'api-rest-http',
       titulo: 'API REST e comunicação via HTTP',
       texto: `
-**API** (Application Programming Interface) é o contrato que define como o front pede coisas pro back. Numa **API REST**, cada recurso tem uma URL (endpoint) e a ação é dada pelo **verbo HTTP**:
+**API** (Application Programming Interface) é o contrato que define como o front pede coisas para o back. Numa **API REST**, cada recurso tem uma URL (endpoint) e a ação é dada pelo **verbo HTTP**:
 
 - **GET** busca dados (GET /produtos, GET /produtos/5)
 - **POST** cria (POST /produtos com JSON no corpo)
@@ -114,14 +114,14 @@ A **configuração** do banco (URL, usuário, senha) não fica no pom.xml, e sim
       id: 'jpa',
       titulo: 'JPA: entidades e relacionamentos',
       texto: `
-**JPA** é a especificação Java pra mapear objetos em tabelas (ORM). O Spring usa o **Hibernate** como implementação.
+**JPA** é a especificação Java para mapear objetos em tabelas (ORM). O Spring usa o **Hibernate** como implementação.
 
 - @Entity: a classe vira uma tabela
 - @Table(name = "produtos"): define o nome da tabela
 - @Id: chave primária
 - @GeneratedValue(strategy = GenerationType.IDENTITY): id gerado pelo banco (auto incremento)
 - @Column(nullable = false, length = 100): configura a coluna
-- @ManyToOne + @JoinColumn: **muitos** produtos pra **uma** categoria. Cria a chave estrangeira
+- @ManyToOne + @JoinColumn: **muitos** produtos para **uma** categoria. Cria a chave estrangeira
 - @OneToMany(mappedBy = "categoria"): o lado inverso (uma categoria, muitos produtos)
 
 Os imports vêm de **jakarta.persistence** (Spring Boot 3). Em versões antigas era javax.persistence.
@@ -139,14 +139,14 @@ Ao criar uma interface que estende **JpaRepository<Entidade, TipoDoId>**, o Spri
 - deleteById(id) e delete(obj): remove
 - existsById(id), count()
 
-Também dá pra criar **query methods** só pelo nome: findByEmail, findByNomeContainingIgnoreCase. Pra consultas específicas, existe @Query.
+Também dá para criar **query methods** só pelo nome: findByEmail, findByNomeContainingIgnoreCase. Para consultas específicas, existe @Query.
 `,
     },
     {
       id: 'crud-responseentity',
       titulo: 'CRUD com ResponseEntity',
       texto: `
-**ResponseEntity** representa a resposta HTTP inteira: **status + cabeçalhos + corpo**. Com ele o controller escolhe o status certo pra cada caso.
+**ResponseEntity** representa a resposta HTTP inteira: **status + cabeçalhos + corpo**. Com ele o controller escolhe o status certo para cada caso.
 
 - Listar: GET, findAll(), **200**
 - Buscar por id: GET, findById(), **200** ou **404**
@@ -161,7 +161,7 @@ Formas de montar: ResponseEntity.ok(obj), ResponseEntity.status(HttpStatus.CREAT
       id: 'dto',
       titulo: 'DTO',
       texto: `
-**DTO (Data Transfer Object)** é um objeto simples, sem regra de negócio, usado só pra **transportar dados** entre o cliente e a API.
+**DTO (Data Transfer Object)** é um objeto simples, sem regra de negócio, usado só para **transportar dados** entre o cliente e a API.
 
 Por que usar:
 - Não expor a entidade inteira (ex.: nunca devolver a **senha**)
@@ -170,7 +170,7 @@ Por que usar:
 - Desacoplar a API da estrutura do banco
 - Evitar loop infinito ao serializar relacionamentos dos dois lados
 
-Em Java moderno, um **record** é ótimo pra DTO.
+Em Java moderno, um **record** é ótimo para DTO.
 `,
     },
     {
@@ -778,10 +778,10 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
     { id: 'f07', frente: 'Qual camada acessa o banco de dados?', verso: 'O **Repository**, normalmente uma interface que estende JpaRepository.' },
     { id: 'f08', frente: 'O que o Model / Entity representa?', verso: 'Uma **tabela** do banco. Atributos viram colunas e cada objeto é uma linha.' },
     { id: 'f09', frente: 'O que é um DTO?', verso: '**Data Transfer Object**: objeto simples, sem regra de negócio, que só transporta dados entre o cliente e a API.' },
-    { id: 'f10', frente: 'Cite 2 motivos pra usar DTO', verso: 'Não expor dados sensíveis (ex.: **senha**) e **controlar** o que entra e o que sai da API. Também concentra validações e desacopla a API do banco.' },
+    { id: 'f10', frente: 'Cite 2 motivos para usar DTO', verso: 'Não expor dados sensíveis (ex.: **senha**) e **controlar** o que entra e o que sai da API. Também concentra validações e desacopla a API do banco.' },
     { id: 'f11', frente: 'Autenticação x autorização', verso: '**Autenticação**: quem você é (login). **Autorização**: o que você pode fazer (permissões/roles).' },
     { id: 'f12', frente: '401 x 403', verso: '**401 Unauthorized**: não autenticado. **403 Forbidden**: autenticado, mas sem permissão.' },
-    { id: 'f13', frente: 'O que significa JWT?', verso: '**JSON Web Token**: token assinado usado pra autenticação stateless.' },
+    { id: 'f13', frente: 'O que significa JWT?', verso: '**JSON Web Token**: token assinado usado para autenticação stateless.' },
     { id: 'f14', frente: 'Quais são as 3 partes de um JWT?', verso: '**header.payload.signature** (cabeçalho, dados/claims e assinatura).' },
     { id: 'f15', frente: 'Como o front envia o JWT em cada requisição?', verso: 'No cabeçalho **Authorization: Bearer token**.' },
     { id: 'f16', frente: 'O payload do JWT é criptografado?', verso: '**Não.** É só codificado em Base64 e assinado. Nunca coloque senha nele.' },
@@ -792,7 +792,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
     { id: 'f21', frente: '@Entity', verso: 'Indica que a classe é uma **entidade JPA**, ou seja, uma tabela.' },
     { id: 'f22', frente: '@Id + @GeneratedValue', verso: '@Id marca a **chave primária**; @GeneratedValue(strategy = GenerationType.IDENTITY) faz o banco gerar o id (auto incremento).' },
     { id: 'f23', frente: '@Column', verso: 'Configura a coluna: nullable, length, unique, name.' },
-    { id: 'f24', frente: '@ManyToOne', verso: '**Muitos pra um**: muitos produtos pra uma categoria. Usado com @JoinColumn, cria a **chave estrangeira**.' },
+    { id: 'f24', frente: '@ManyToOne', verso: '**Muitos para um**: muitos produtos para uma categoria. Usado com @JoinColumn, cria a **chave estrangeira**.' },
     { id: 'f25', frente: 'JpaRepository<T, ID>: o que são T e ID?', verso: '**T** é a entidade (ex.: Produto) e **ID** é o tipo da chave primária (ex.: Long).' },
     { id: 'f26', frente: 'O que findById() retorna?', verso: 'Um **Optional**, porque o registro pode não existir.' },
     { id: 'f27', frente: 'save() insere ou atualiza?', verso: 'Os dois: **sem id** insere; **com id existente** atualiza.' },
@@ -849,7 +849,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
     {
       id: 'q06',
       tipo: 'multipla',
-      enunciado: 'Qual status HTTP é o mais adequado pra resposta de um POST que criou um recurso?',
+      enunciado: 'Qual status HTTP é o mais adequado para resposta de um POST que criou um recurso?',
       opcoes: ['201 Created', '200 OK', '204 No Content', '404 Not Found'],
       correta: 0,
       explicacao: '201 Created indica que um novo recurso foi criado. Ex.: ResponseEntity.status(HttpStatus.CREATED).body(salvo).',
@@ -857,7 +857,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
     {
       id: 'q07',
       tipo: 'multipla',
-      enunciado: 'Qual status é o mais adequado pra um DELETE que removeu o recurso e não devolve corpo?',
+      enunciado: 'Qual status é o mais adequado para um DELETE que removeu o recurso e não devolve corpo?',
       opcoes: ['204 No Content', '201 Created', '400 Bad Request', '500 Internal Server Error'],
       correta: 0,
       explicacao: '204 No Content: deu certo e não há corpo na resposta. Ex.: ResponseEntity.noContent().build().',
@@ -896,7 +896,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
       enunciado: 'Um usuário logado tenta excluir um produto, mas o perfil dele não tem permissão. Qual status a API deve devolver?',
       opcoes: ['403 Forbidden', '401 Unauthorized', '404 Not Found', '400 Bad Request'],
       correta: 0,
-      explicacao: 'Ele está autenticado (sabemos quem é), mas não está autorizado. Falha de autorização é 403. O 401 é pra quem não está autenticado.',
+      explicacao: 'Ele está autenticado (sabemos quem é), mas não está autorizado. Falha de autorização é 403. O 401 é para quem não está autenticado.',
     },
     {
       id: 'q12',
@@ -923,7 +923,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
     {
       id: 'q15',
       tipo: 'multipla',
-      enunciado: 'Como o front-end normalmente envia o JWT pro back-end?',
+      enunciado: 'Como o front-end normalmente envia o JWT para o back-end?',
       opcoes: [
         'No cabeçalho Authorization: Bearer token',
         'No corpo de toda requisição GET',
@@ -938,7 +938,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
       tipo: 'vf',
       enunciado: 'A validação no front-end é suficiente, porque o usuário não consegue enviar dados sem passar por ela.',
       correta: false,
-      explicacao: 'Dá pra burlar o front (DevTools, Postman, curl). A validação no back-end é obrigatória.',
+      explicacao: 'Dá para burlar o front (DevTools, Postman, curl). A validação no back-end é obrigatória.',
     },
     {
       id: 'q17',
@@ -962,14 +962,14 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
       enunciado: 'Muitos produtos pertencem a uma categoria. Qual anotação vai no atributo categoria da classe Produto?',
       opcoes: ['@ManyToOne', '@OneToMany', '@OneToOne', '@ManyToMany'],
       correta: 0,
-      explicacao: 'Do ponto de vista do Produto: muitos produtos pra uma categoria, então @ManyToOne (com @JoinColumn).',
+      explicacao: 'Do ponto de vista do Produto: muitos produtos para uma categoria, então @ManyToOne (com @JoinColumn).',
     },
     {
       id: 'q20',
       tipo: 'vf',
       enunciado: 'No Spring Boot 3, as anotações da JPA são importadas de jakarta.persistence.',
       correta: true,
-      explicacao: 'A partir do Spring Boot 3 o pacote mudou de javax.persistence pra jakarta.persistence.',
+      explicacao: 'A partir do Spring Boot 3 o pacote mudou de javax.persistence para jakarta.persistence.',
     },
     {
       id: 'q21',
@@ -987,7 +987,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
     {
       id: 'q22',
       tipo: 'vf',
-      enunciado: 'O método save() do JpaRepository serve tanto pra inserir quanto pra atualizar.',
+      enunciado: 'O método save() do JpaRepository serve tanto para inserir quanto para atualizar.',
       correta: true,
       explicacao: 'Sem id (ou com id inexistente) ele insere; com um id que já existe, ele atualiza.',
     },
@@ -1017,7 +1017,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
     {
       id: 'q26',
       tipo: 'multipla',
-      enunciado: 'Qual verbo HTTP é usado pra atualizar um recurso existente?',
+      enunciado: 'Qual verbo HTTP é usado para atualizar um recurso existente?',
       opcoes: ['PUT', 'GET', 'POST', 'DELETE'],
       correta: 0,
       explicacao: 'PUT atualiza (ex.: PUT /produtos/5). POST cria, GET busca, DELETE remove.',
@@ -1035,7 +1035,7 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
       enunciado: 'Onde deve ser validada uma regra como "não permitir cadastrar e-mail repetido"?',
       opcoes: ['No Service', 'No Controller', 'No pom.xml', 'Só no front-end'],
       correta: 0,
-      explicacao: 'É uma regra de negócio que depende do banco, então fica no Service (usando o Repository pra consultar).',
+      explicacao: 'É uma regra de negócio que depende do banco, então fica no Service (usando o Repository para consultar).',
     },
   ],
 }
