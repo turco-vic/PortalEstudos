@@ -94,7 +94,7 @@ export function Texto({ texto, estilo = 'leitura', className = '' }: Props) {
   const fonte = ESTILOS[estilo]
 
   return (
-    <div className={`space-y-4 ${fonte} ${className}`}>
+    <div className={`space-y-4 [overflow-wrap:anywhere] ${fonte} ${className}`}>
       {separarBlocos(texto).map((bloco, i) => {
         if (bloco.tipo === 'codigo') {
           return (

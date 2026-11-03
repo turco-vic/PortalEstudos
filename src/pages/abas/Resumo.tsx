@@ -6,7 +6,7 @@ export function Resumo({ materia }: { materia: Materia }) {
   if (materia.resumo.length === 0) return <SemConteudo materia={materia} oQue="resumo" />
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[14rem_1fr]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[14rem_minmax(0,1fr)]">
       <nav aria-label="Tópicos do resumo" className="lg:sticky lg:top-6 lg:self-start">
         <p className="mb-2 text-sm text-apagado">{materia.resumo.length} tópicos</p>
         <ol className="space-y-1 border-l border-linha">

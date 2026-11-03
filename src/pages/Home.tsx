@@ -18,7 +18,7 @@ export function Home() {
     <div className="space-y-12">
       {proxima && dominioProxima ? (
         <section className={`${folha} overflow-hidden`} aria-labelledby="proxima-prova">
-          <div className="grid gap-8 p-5 sm:p-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-8 p-5 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
             <div>
               <p className="text-apagado">Próxima prova</p>
               <h1 id="proxima-prova" className="mt-1 text-3xl leading-tight font-bold sm:text-4xl">
