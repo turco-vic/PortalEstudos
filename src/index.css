@@ -1,0 +1,114 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-leitura: 'Literata', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-papel: #f6f7f9;
+  --color-folha: #ffffff;
+  --color-linha: #dfe3ea;
+  --color-grafite: #1f2937;
+  --color-apagado: #5b6475;
+  --color-tinta: #1e3a8a;
+  --color-tinta-clara: #dbe4fb;
+  --color-marca: #fde047;
+  --color-certo: #15803d;
+  --color-certo-fundo: #dcfce7;
+  --color-erro: #b91c1c;
+  --color-erro-fundo: #fee2e2;
+  --color-parcial: #a16207;
+  --color-parcial-fundo: #fef3c7;
+}
+
+/* No escuro, os mesmos nomes apontam pra outra paleta */
+.dark {
+  --color-papel: #0e1626;
+  --color-folha: #152036;
+  --color-linha: #26334d;
+  --color-grafite: #e6eaf2;
+  --color-apagado: #9aa5ba;
+  --color-tinta: #9db7ff;
+  --color-tinta-clara: #1f2d4f;
+  --color-certo: #4ade80;
+  --color-certo-fundo: #11301f;
+  --color-erro: #f87171;
+  --color-erro-fundo: #3a1717;
+  --color-parcial: #facc15;
+  --color-parcial-fundo: #352b0b;
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-papel);
+  color: var(--color-grafite);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-tinta);
+  outline-offset: 2px;
+}
+
+/* Marca-texto: usado no **negrito** dos textos e nos destaques */
+.marca {
+  background: linear-gradient(
+    to top,
+    transparent 0.08em,
+    color-mix(in srgb, var(--color-marca) 75%, transparent) 0.08em,
+    color-mix(in srgb, var(--color-marca) 75%, transparent) 0.62em,
+    transparent 0.62em
+  );
+  color: inherit;
+  font-weight: 700;
+  padding: 0 0.12em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* No escuro, o marca-texto vira uma faixa fina embaixo do texto */
+.dark .marca {
+  background: linear-gradient(
+    to top,
+    transparent 0.04em,
+    color-mix(in srgb, var(--color-marca) 70%, transparent) 0.04em,
+    color-mix(in srgb, var(--color-marca) 70%, transparent) 0.22em,
+    transparent 0.22em
+  );
+  color: #fff3a8;
+}
+
+/* Flashcard que vira */
+.cartao {
+  perspective: 1200px;
+}
+.cartao-miolo {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.cartao-miolo.virado {
+  transform: rotateY(180deg);
+}
+/* As duas faces ocupam a mesma célula: o cartão fica com a altura da maior */
+.cartao-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.cartao-verso {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cartao-miolo {
+    transition: none;
+  }
+}
