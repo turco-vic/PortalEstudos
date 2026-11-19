@@ -5,7 +5,7 @@ export const backend: Materia = {
   nome: 'Desenvolvimento Back-End',
   semestre: 2,
   status: 'em andamento',
-  provas: [{ titulo: 'Prova', data: '2026-11-11' }],
+  provas: [{ titulo: 'Prova', data: '2026-11-30' }],
 
   resumo: [
     {
@@ -153,8 +153,73 @@ Também dá para criar **query methods** só pelo nome: findByEmail, findByNomeC
 - Criar: POST, save(), **201**
 - Atualizar: PUT, findById() + save(), **200** ou **404**
 - Remover: DELETE, deleteById(), **204** ou **404**
+- Dados inválidos (ex.: preço negativo): **400**
+- Erro não tratado no servidor: **500** (é o que acontece se você esquecer de tratar o "não encontrado")
 
-Formas de montar: ResponseEntity.ok(obj), ResponseEntity.status(HttpStatus.CREATED).body(obj), ResponseEntity.noContent().build(), ResponseEntity.notFound().build().
+Formas de montar:
+- ResponseEntity.ok(obj): **200**
+- ResponseEntity.status(HttpStatus.CREATED).body(obj): **201**
+- ResponseEntity.noContent().build(): **204**
+- ResponseEntity.badRequest().build(): **400**
+- ResponseEntity.notFound().build(): **404**
+`,
+    },
+    {
+      id: 'fluxo-cadastro',
+      titulo: 'Caminho de uma requisição de cadastro',
+      texto: `
+É a pergunta mais provável da prova: explicar o caminho de um POST /produtos até o banco e de volta.
+
+1. O usuário (front-end, Postman ou Thunder Client) envia **POST /produtos** com os dados em **JSON** no corpo.
+2. O **Controller** recebe a requisição (@PostMapping + @RequestBody converte o JSON em objeto Produto) e chama o Service.
+3. O **Service** aplica as **regras de negócio** (ex.: preço não pode ser negativo; se for, lança exceção e a resposta vira **400**) e chama o Repository.
+4. O **Repository** executa save() e a **JPA/Hibernate** gera o comando **INSERT**.
+5. O **banco** grava o registro e gera o **ID**.
+6. O produto salvo, já com ID, volta pelo Repository, Service e Controller, que responde **201 Created** com o produto no corpo.
+
+~~~text
+POST /produtos (JSON)
+  -> Controller (@PostMapping, @RequestBody)
+  -> Service (regras de negócio)
+  -> Repository (save)
+  -> Banco (INSERT, gera o ID)
+<- 201 Created + produto salvo
+~~~
+`,
+    },
+    {
+      id: 'nao-encontrado',
+      titulo: 'Produto não encontrado: Optional e 404',
+      texto: `
+findById(id) devolve um **Optional<Produto>**: uma "caixa" que pode ter o produto ou estar **vazia** (ID não existe).
+
+- A ausência é verificada no **Service** (Optional vazio, ou existsById() antes de excluir).
+- O **Controller** transforma isso em **404 Not Found**.
+- Nunca deixe virar **500** (erro não tratado) nem devolver **200 com corpo vazio**.
+
+~~~java
+return service.buscarPorId(id)
+        .map(ResponseEntity::ok)                    // achou: 200
+        .orElse(ResponseEntity.notFound().build()); // não achou: 404
+~~~
+
+Outra forma aceita: lançar uma exceção própria no Service e tratar com @RestControllerAdvice.
+`,
+    },
+    {
+      id: 'checklist-prova',
+      titulo: 'Checklist da prova',
+      texto: `
+O que a professora pediu para saber (orientações finais do guia):
+
+- A responsabilidade de **Controller, Service, Repository e Entity**
+- O significado e o uso das principais **anotações** (@RestController, @Service, @Entity, @Id, @GeneratedValue, @Column, @Table, @ManyToOne, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, @PathVariable, @RequestParam)
+- A diferença entre **GET, POST, PUT e DELETE**
+- Os métodos save(), findAll(), findById(), delete() e deleteById()
+- O uso de **ResponseEntity** e dos status **200, 201, 204, 400, 404 e 500**
+- O **caminho** da requisição entre a API e o banco
+
+Lembrete da professora: não é só decorar comandos, é entender **como as camadas trabalham juntas**.
 `,
     },
     {
@@ -766,6 +831,315 @@ public class ProdutoController {
 Aqui o controller chama o repository direto para deixar o exemplo curto. No projeto em camadas, essas chamadas ficam no **Service**, e o controller só chama o service.
 `,
     },
+    {
+      id: 'p18',
+      fonte: 'Guia de Estudos (Ex. 1)',
+      pergunta: 'Num sistema de cadastro de produtos: qual camada recebe a solicitação de cadastro, onde ficam as regras de negócio (ex.: impedir preço negativo), qual camada acessa o banco e qual classe representa os dados de um produto?',
+      resposta: `
+1. **Controller** (ProdutoController, com @RestController): recebe a requisição HTTP de cadastro enviada pelo usuário.
+2. **Service** (ProdutoService, com @Service): é onde ficam as regras de negócio, como impedir o cadastro de um produto com preço negativo.
+3. **Repository** (ProdutoRepository, que estende JpaRepository): realiza as operações de acesso ao banco de dados.
+4. **Model / Entity** (Produto, com @Entity): representa os dados de um produto e corresponde a uma tabela do banco.
+`,
+    },
+    {
+      id: 'p19',
+      fonte: 'Guia de Estudos (Ex. 1)',
+      pergunta: 'Explique o caminho percorrido por uma requisição de cadastro, desde o Controller até o banco de dados.',
+      resposta: `
+1. O usuário envia um **POST /produtos** com os dados em **JSON**.
+2. O **Controller** recebe a requisição (@PostMapping + @RequestBody) e chama o Service.
+3. O **Service** valida as **regras de negócio** (ex.: preço não pode ser negativo) e chama o Repository.
+4. O **Repository** executa save() e o JPA gera o comando **INSERT** no banco.
+5. O banco grava o registro e devolve o produto com o **ID gerado**.
+6. A resposta volta pelo Service e pelo Controller, que retorna **201 Created** com o produto salvo.
+
+~~~text
+Usuário -> Controller -> Service -> Repository -> Banco
+Usuário <- Controller <- Service <- Repository <- Banco   (201 Created)
+~~~
+`,
+    },
+    {
+      id: 'p20',
+      fonte: 'Guia de Estudos (Ex. 2)',
+      pergunta: 'Como organizar os pacotes controller, service, repository e model com ProdutoController, ProdutoService, ProdutoRepository e Produto?',
+      resposta: `
+Estrutura esperada (o nome do pacote base pode variar):
+
+~~~text
+src/main/java/com/exemplo/produtos/
+  controller/
+    ProdutoController.java   (recebe as requisições HTTP)
+  service/
+    ProdutoService.java      (regras de negócio)
+  repository/
+    ProdutoRepository.java   (interface que estende JpaRepository)
+  model/
+    Produto.java             (entidade mapeada para a tabela)
+~~~
+
+- ProdutoController é uma **classe** com @RestController.
+- ProdutoService é uma **classe** com @Service.
+- ProdutoRepository é uma **interface** (não uma classe) que estende JpaRepository.
+- Produto é uma **classe** com @Entity.
+`,
+    },
+    {
+      id: 'p21',
+      fonte: 'Guia de Estudos (Ex. 3)',
+      pergunta: 'Qual anotação usar para: listar produtos, receber um novo produto, atualizar, excluir pelo ID, classe que é tabela, atributo chave primária e receber o ID da URL?',
+      resposta: `
+1. Listar todos os produtos: @GetMapping
+2. Receber os dados de um novo produto: @PostMapping (os dados chegam no corpo com @RequestBody)
+3. Atualizar um produto existente: @PutMapping
+4. Excluir um produto pelo ID: @DeleteMapping
+5. Classe que representa uma tabela do banco: @Entity (e, para definir o nome da tabela, @Table)
+6. Atributo que é a chave primária: @Id (normalmente junto com @GeneratedValue)
+7. Receber o ID informado na URL: @PathVariable
+`,
+    },
+    {
+      id: 'p22',
+      fonte: 'Guia de Estudos (Ex. 4)',
+      pergunta: 'Crie a entidade Produto com JPA (id Long, nome String, descricao String, preco BigDecimal, quantidade Integer). Qual tabela ela representa?',
+      resposta: `
+~~~java
+package com.exemplo.produtos.model;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+
+@Entity                       // esta classe é uma tabela
+@Table(name = "produto")      // nome da tabela
+public class Produto {
+
+    @Id                                                  // chave primária
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // banco gera o ID
+    private Long id;
+
+    @Column(nullable = false)  // coluna obrigatória
+    private String nome;
+
+    private String descricao;
+    private BigDecimal preco;   // BigDecimal: tipo certo para dinheiro
+    private Integer quantidade;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
+
+    public BigDecimal getPreco() { return preco; }
+    public void setPreco(BigDecimal preco) { this.preco = preco; }
+
+    public Integer getQuantidade() { return quantidade; }
+    public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+}
+~~~
+
+- Tabela representada: **produto** (definida em @Table). **Sem @Table, o JPA usa o nome da classe** como nome da tabela.
+- Os atributos são **privados** e acessados por getters e setters (**encapsulamento**).
+- Em versões antigas do Spring Boot o import é javax.persistence.
+`,
+    },
+    {
+      id: 'p23',
+      fonte: 'Guia de Estudos (Ex. 5)',
+      pergunta: 'Crie o ProdutoRepository. Qual é a finalidade do JpaRepository? É preciso implementar o findAll()? Qual método busca pelo ID?',
+      resposta: `
+~~~java
+package com.exemplo.produtos.repository;
+
+import com.exemplo.produtos.model.Produto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ProdutoRepository extends JpaRepository<Produto, Long> {
+    // não precisa escrever nada: save, findAll, findById e deleteById já vêm prontos
+}
+~~~
+
+- Entidade: **Produto**. Tipo da chave primária: **Long**.
+- Métodos CRUD que já vêm prontos: save(), saveAll(), findAll(), findById(), existsById(), count(), delete(), deleteById() e deleteAll().
+
+Perguntas:
+- **Finalidade do JpaRepository**: fornecer prontas as operações de acesso ao banco (CRUD, paginação e ordenação), **sem escrever SQL** nem implementar a interface.
+- **Não** é necessário implementar o findAll(): o Spring Data JPA cria a implementação automaticamente.
+- Para buscar pelo ID usa-se **findById(id)**, que devolve um **Optional<Produto>** (vazio se o produto não existir).
+`,
+    },
+    {
+      id: 'p24',
+      fonte: 'Guia de Estudos (Ex. 6)',
+      pergunta: 'Implemente o CRUD de produtos usando Controller, Service, Repository e Entity, tratando o produto não encontrado.',
+      resposta: `
+**Service** (regras de negócio e tratamento do "não encontrado"):
+
+~~~java
+@Service
+public class ProdutoService {
+
+    private final ProdutoRepository repository;
+
+    public ProdutoService(ProdutoRepository repository) { // o Spring injeta o Repository
+        this.repository = repository;
+    }
+
+    public Produto cadastrar(Produto produto) {
+        if (produto.getPreco() == null || produto.getPreco().signum() < 0) {
+            throw new IllegalArgumentException("Preço não pode ser negativo"); // vira 400
+        }
+        return repository.save(produto);
+    }
+
+    public List<Produto> listar() {
+        return repository.findAll();
+    }
+
+    public Optional<Produto> buscarPorId(Long id) {
+        return repository.findById(id); // vazio se não existir
+    }
+
+    public Optional<Produto> atualizar(Long id, Produto dados) {
+        return repository.findById(id).map(p -> {
+            p.setNome(dados.getNome());
+            p.setDescricao(dados.getDescricao());
+            p.setPreco(dados.getPreco());
+            p.setQuantidade(dados.getQuantidade());
+            return repository.save(p); // save com ID existente = UPDATE
+        });
+    }
+
+    public boolean excluir(Long id) {
+        if (!repository.existsById(id)) return false; // vira 404
+        repository.deleteById(id);
+        return true;
+    }
+}
+~~~
+
+**Controller** (recebe e responde com ResponseEntity):
+
+~~~java
+@RestController
+@RequestMapping("/produtos")
+public class ProdutoController {
+
+    private final ProdutoService service; // usa o Service, nunca o Repository direto
+
+    public ProdutoController(ProdutoService service) {
+        this.service = service;
+    }
+
+    @PostMapping
+    public ResponseEntity<Produto> cadastrar(@RequestBody Produto produto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.cadastrar(produto)); // 201
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Produto>> listar() {
+        return ResponseEntity.ok(service.listar()); // 200
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Produto> buscar(@PathVariable Long id) {
+        return service.buscarPorId(id)
+                .map(ResponseEntity::ok)                    // 200
+                .orElse(ResponseEntity.notFound().build()); // 404
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Produto> atualizar(@PathVariable Long id, @RequestBody Produto dados) {
+        return service.atualizar(id, dados)
+                .map(ResponseEntity::ok)                    // 200
+                .orElse(ResponseEntity.notFound().build()); // 404
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        return service.excluir(id)
+                ? ResponseEntity.noContent().build()  // 204
+                : ResponseEntity.notFound().build();  // 404
+    }
+}
+~~~
+
+O que a professora confere:
+- O Controller só recebe e responde; **não acessa o Repository diretamente**.
+- O Service concentra a lógica e usa save, findAll, findById e deleteById.
+- Produto não encontrado retorna **404** (com Optional, como acima, ou com exceção própria tratada por @RestControllerAdvice).
+`,
+    },
+    {
+      id: 'p25',
+      fonte: 'Guia de Estudos (Ex. 7)',
+      pergunta: 'Testando a API no Thunder Client/Postman: qual método e qual status em cada teste (cadastrar "Teclado", listar, buscar, atualizar preço, excluir e buscar o excluído)? Qual a diferença entre 200, 201 e 404?',
+      resposta: `
+1. Cadastrar "Teclado" (R$ 150,00, qtd 10): **POST** /produtos, **201 Created**
+2. Consultar todos: **GET** /produtos, **200 OK**
+3. Buscar pelo ID: **GET** /produtos/1, **200 OK**
+4. Atualizar preço para R$ 180,00: **PUT** /produtos/1, **200 OK**
+5. Excluir o produto: **DELETE** /produtos/1, **204 No Content**
+6. Consultar o produto excluído: **GET** /produtos/1, **404 Not Found**
+
+Corpo JSON do teste 1:
+
+~~~json
+{
+  "nome": "Teclado",
+  "descricao": "Teclado USB",
+  "preco": 150.00,
+  "quantidade": 10
+}
+~~~
+
+- Status retornados: **201, 200, 200, 200, 204 e 404**.
+- Produto não encontrado: a API deve retornar **404 Not Found**, e **não** um erro 500 ou um 200 com corpo vazio.
+- Diferença: **200 OK** = deu certo (consulta ou atualização); **201 Created** = um novo recurso foi criado (cadastro); **404 Not Found** = o recurso pedido não existe.
+`,
+    },
+    {
+      id: 'p26',
+      fonte: 'Guia de Estudos (Ex. 8)',
+      pergunta: 'Situações práticas: (A) ID inexistente, (B) cadastro com dados inválidos, (C) cadastro com sucesso, (D) exclusão de produto existente. Qual status, camada e método usar em cada uma?',
+      resposta: `
+**Situação A: produto com ID inexistente**
+- Status: **404 Not Found**.
+- A ausência é verificada no **Service** (o findById devolve um Optional vazio); o Controller transforma isso na resposta 404.
+
+**Situação B: cadastro com informações inválidas**
+- Status: **400 Bad Request**.
+- As regras de negócio ficam no **Service** (validações simples de campo também podem usar Bean Validation, com @Valid no Controller).
+
+**Situação C: produto cadastrado com sucesso**
+- Status recomendado: **201 Created**.
+- Método do Repository: **save()**.
+
+**Situação D: exclusão de produto existente**
+- Método HTTP: **DELETE**.
+- Método do Repository: **deleteById(id)** (ou delete(produto)).
+- Status sem conteúdo na resposta: **204 No Content**.
+`,
+    },
+    {
+      id: 'p27',
+      fonte: 'Guia de Estudos (orientações)',
+      pergunta: 'Qual é a diferença entre os métodos HTTP GET, POST, PUT e DELETE?',
+      resposta: `
+- **GET**: **consulta** dados, sem alterar nada. Ex.: GET /produtos (lista) e GET /produtos/1 (busca um). Anotação @GetMapping, usa findAll() ou findById(). Status **200** (ou 404).
+- **POST**: **cadastra** um novo registro. Os dados vão no **corpo** em JSON. Anotação @PostMapping + @RequestBody, usa save(). Status **201**.
+- **PUT**: **atualiza** um registro existente. ID na URL e dados no corpo. Anotação @PutMapping, usa findById() + save(). Status **200** (ou 404).
+- **DELETE**: **exclui** um registro. ID na URL. Anotação @DeleteMapping, usa deleteById(). Status **204** (ou 404).
+
+Ligação com o CRUD: **C**reate = POST, **R**ead = GET, **U**pdate = PUT, **D**elete = DELETE.
+`,
+    },
   ],
 
   flashcards: [
@@ -804,6 +1178,22 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
     { id: 'f33', frente: 'Import das anotações JPA no Spring Boot 3', verso: '**jakarta.persistence** (ex.: import jakarta.persistence.Entity). Antes era javax.persistence.' },
     { id: 'f34', frente: 'Por que validar no back-end se o front já valida?', verso: 'Porque a validação do front **pode ser burlada** (DevTools, Postman). O back é a última barreira.' },
     { id: 'f35', frente: '@Valid', verso: 'Ativa a validação (Bean Validation) do objeto recebido no controller. Dado inválido gera **400 Bad Request**.' },
+    { id: 'f36', frente: 'O que significa CRUD?', verso: '**Create** (criar, POST), **Read** (consultar, GET), **Update** (atualizar, PUT) e **Delete** (excluir, DELETE).' },
+    { id: 'f37', frente: 'Caminho de um cadastro (POST /produtos)', verso: 'Controller (@PostMapping + @RequestBody) -> Service (regras) -> Repository (save) -> banco (INSERT, gera o ID) -> volta e responde **201 Created**.' },
+    { id: 'f38', frente: 'Sem @Table, qual é o nome da tabela?', verso: 'O **nome da classe** (ex.: Produto). @Table(name = "...") serve para definir outro nome.' },
+    { id: 'f39', frente: 'ProdutoRepository é classe ou interface?', verso: '**Interface**, que estende JpaRepository<Produto, Long>. O Spring gera a implementação.' },
+    { id: 'f40', frente: 'Preciso implementar o findAll()?', verso: '**Não.** O Spring Data JPA cria a implementação automaticamente.' },
+    { id: 'f41', frente: 'Produto não encontrado: o que a API deve retornar?', verso: '**404 Not Found**. Nunca um 500 ou um 200 com corpo vazio.' },
+    { id: 'f42', frente: 'Onde se verifica que o produto não existe?', verso: 'No **Service** (findById devolve Optional vazio). O **Controller** transforma isso em 404.' },
+    { id: 'f43', frente: '500 Internal Server Error', verso: 'Erro **interno do servidor**, normalmente uma exceção não tratada.' },
+    { id: 'f44', frente: '400 Bad Request: quando?', verso: 'Requisição com **dados inválidos**. Ex.: cadastrar produto com preço negativo.' },
+    { id: 'f45', frente: '200 x 201 x 404', verso: '**200**: deu certo (consulta/atualização). **201**: recurso criado (cadastro). **404**: recurso não existe.' },
+    { id: 'f46', frente: 'delete() x deleteById()', verso: 'delete(produto) recebe o **objeto**; deleteById(id) recebe só o **ID**. Os dois excluem.' },
+    { id: 'f47', frente: 'existsById(id)', verso: 'Devolve **true/false** dizendo se o registro existe. Útil antes de excluir para responder 404.' },
+    { id: 'f48', frente: 'Por que BigDecimal no preço?', verso: 'É o tipo certo para **dinheiro**: não tem os erros de arredondamento de double/float.' },
+    { id: 'f49', frente: 'O Controller pode chamar o Repository direto?', verso: '**Não** na arquitetura em camadas: o Controller usa o **Service**, e só o Service usa o Repository.' },
+    { id: 'f50', frente: 'Status de cada forma do ResponseEntity', verso: 'ok() = **200**; status(HttpStatus.CREATED) = **201**; noContent() = **204**; badRequest() = **400**; notFound() = **404**.' },
+    { id: 'f51', frente: 'Status esperados no teste do Ex. 7 (cadastrar, listar, buscar, atualizar, excluir, buscar excluído)', verso: '**201, 200, 200, 200, 204 e 404**.' },
   ],
 
   questoes: [
@@ -1036,6 +1426,139 @@ Aqui o controller chama o repository direto para deixar o exemplo curto. No proj
       opcoes: ['No Service', 'No Controller', 'No pom.xml', 'Só no front-end'],
       correta: 0,
       explicacao: 'É uma regra de negócio que depende do banco, então fica no Service (usando o Repository para consultar).',
+    },
+    {
+      id: 'q29',
+      tipo: 'multipla',
+      enunciado: 'Depois de um DELETE /produtos/1 bem-sucedido, o que um GET /produtos/1 deve retornar?',
+      opcoes: ['404 Not Found', '200 OK com corpo vazio', '500 Internal Server Error', '204 No Content'],
+      correta: 0,
+      explicacao: 'O produto não existe mais, então a resposta certa é 404. Um 500 indicaria erro não tratado e um 200 vazio esconderia o problema.',
+    },
+    {
+      id: 'q30',
+      tipo: 'multipla',
+      enunciado: 'Um usuário tenta cadastrar um produto com preço negativo. Qual status a API deve retornar?',
+      opcoes: ['400 Bad Request', '201 Created', '404 Not Found', '204 No Content'],
+      correta: 0,
+      explicacao: 'Dados inválidos geram 400. A regra do preço negativo fica no Service.',
+    },
+    {
+      id: 'q31',
+      tipo: 'vf',
+      enunciado: 'É necessário implementar manualmente o método findAll() no ProdutoRepository.',
+      correta: false,
+      explicacao: 'O Spring Data JPA gera a implementação de findAll(), save(), findById() e deleteById() automaticamente.',
+    },
+    {
+      id: 'q32',
+      tipo: 'multipla',
+      enunciado: 'Qual é a ordem correta do caminho de uma requisição de cadastro?',
+      opcoes: [
+        'Controller -> Service -> Repository -> Banco',
+        'Service -> Controller -> Repository -> Banco',
+        'Controller -> Repository -> Service -> Banco',
+        'Repository -> Service -> Controller -> Banco',
+      ],
+      correta: 0,
+      explicacao: 'O Controller recebe, o Service aplica as regras, o Repository executa o save() e o banco grava. A resposta faz o caminho de volta.',
+    },
+    {
+      id: 'q33',
+      tipo: 'multipla',
+      enunciado: 'A classe Produto tem @Entity, mas não tem @Table. Qual nome de tabela o JPA usa?',
+      opcoes: ['O nome da classe (Produto)', 'tb_produto', 'produtos, sempre no plural', 'Nenhum: a tabela não é mapeada'],
+      correta: 0,
+      explicacao: 'Sem @Table, o JPA usa o nome da classe. @Table(name = "...") serve para escolher outro nome.',
+    },
+    {
+      id: 'q34',
+      tipo: 'multipla',
+      enunciado: 'Qual tipo Java é o mais indicado para o atributo preco?',
+      opcoes: ['BigDecimal', 'double', 'String', 'Integer'],
+      correta: 0,
+      explicacao: 'BigDecimal guarda valores em dinheiro sem os erros de arredondamento de double e float.',
+    },
+    {
+      id: 'q35',
+      tipo: 'multipla',
+      enunciado: 'Qual status é devolvido por ResponseEntity.noContent().build()?',
+      opcoes: ['204 No Content', '200 OK', '404 Not Found', '201 Created'],
+      correta: 0,
+      explicacao: 'noContent() monta uma resposta 204, sem corpo. É o retorno típico de um DELETE bem-sucedido.',
+    },
+    {
+      id: 'q36',
+      tipo: 'vf',
+      enunciado: 'ProdutoRepository é uma classe que implementa JpaRepository.',
+      correta: false,
+      explicacao: 'É uma interface que estende (extends) JpaRepository<Produto, Long>. Quem cria a implementação é o Spring.',
+    },
+    {
+      id: 'q37',
+      tipo: 'vf',
+      enunciado: 'Na arquitetura em camadas, o Controller deve chamar o Service, e não o Repository diretamente.',
+      correta: true,
+      explicacao: 'O Controller só recebe e responde. Quem usa o Repository é o Service.',
+    },
+    {
+      id: 'q38',
+      tipo: 'multipla',
+      enunciado: 'Um usuário consulta um produto cujo ID não existe. Em qual camada a ausência deve ser verificada?',
+      opcoes: ['Service', 'Model', 'pom.xml', 'Não precisa verificar'],
+      correta: 0,
+      explicacao: 'O Service recebe o Optional vazio do findById() e o Controller transforma isso em 404.',
+    },
+    {
+      id: 'q39',
+      tipo: 'multipla',
+      enunciado: 'Qual método do Repository exclui um registro a partir do seu ID?',
+      opcoes: ['deleteById()', 'findById()', 'save()', 'existsById()'],
+      correta: 0,
+      explicacao: 'deleteById(id) exclui pelo ID. delete(produto) também exclui, mas recebe o objeto.',
+    },
+    {
+      id: 'q40',
+      tipo: 'vf',
+      enunciado: 'Se o produto não for encontrado, é aceitável a API devolver 200 OK com o corpo vazio.',
+      correta: false,
+      explicacao: 'O certo é 404 Not Found. O gabarito diz: nem 500, nem 200 com corpo vazio.',
+    },
+    {
+      id: 'q41',
+      tipo: 'multipla',
+      enunciado: 'O que indica o status 500 Internal Server Error?',
+      opcoes: [
+        'Um erro interno no servidor, como uma exceção não tratada',
+        'Que o recurso não foi encontrado',
+        'Que os dados enviados são inválidos',
+        'Que o recurso foi criado',
+      ],
+      correta: 0,
+      explicacao: '500 é erro do servidor. Recurso inexistente é 404, dados inválidos é 400 e recurso criado é 201.',
+    },
+    {
+      id: 'q42',
+      tipo: 'multipla',
+      enunciado: 'Qual anotação, junto com @PostMapping, recebe os dados do novo produto enviados em JSON?',
+      opcoes: ['@RequestBody', '@PathVariable', '@RequestParam', '@Id'],
+      correta: 0,
+      explicacao: '@RequestBody converte o JSON do corpo da requisição no objeto Produto.',
+    },
+    {
+      id: 'q43',
+      tipo: 'multipla',
+      enunciado: 'PUT /produtos/99 é enviado, mas não existe produto com ID 99. Qual status é o correto?',
+      opcoes: ['404 Not Found', '200 OK', '201 Created', '204 No Content'],
+      correta: 0,
+      explicacao: 'Não dá para atualizar o que não existe. O Service devolve Optional vazio e o Controller responde 404.',
+    },
+    {
+      id: 'q44',
+      tipo: 'vf',
+      enunciado: 'O método save() executado com um ID que já existe no banco gera um UPDATE.',
+      correta: true,
+      explicacao: 'Sem ID, save() faz INSERT; com ID existente, faz UPDATE. Por isso o atualizar busca com findById() e depois chama save().',
     },
   ],
 }
